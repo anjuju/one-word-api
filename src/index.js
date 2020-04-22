@@ -4,11 +4,18 @@ const http = require('http');
 const bodyParser = require('body-parser'); 
 const cors = require('cors'); 
 const uuid = require('uuid/v4'); 
+const fs = require('fs');
 
 // Initialization 
 const app = express(); 
 app.use(cors()); 
 app.use(bodyParser.json()); 
+
+// Server 
+const port = 8080; 
+const server = http.createServer(app); 
+
+const io = require('socket.io')(server);
 
 const colors = {
   red: '#b01320',
@@ -20,11 +27,9 @@ const colors = {
   teal: '#0a7d5e',
   blue: '#1679db',
   purple: '#6213d1',
+  black: '#000000'
 };
 
 
 
-// Server 
-const port = 8080; 
-const server = http.createServer(app); 
 server.listen(port, () => console.log(`Server running on port ${port}`));
