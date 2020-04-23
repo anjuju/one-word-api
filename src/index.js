@@ -17,6 +17,7 @@ const server = http.createServer(app);
 
 const io = require('socket.io')(server);
 
+
 const colors = {
   red: '#b01320',
   hotPink: '#c325db',
@@ -30,6 +31,46 @@ const colors = {
   black: '#000000'
 };
 
+const database = {
+
+}
+
+// Postgres
+const config = require('./config');
+
+const { Pool } = require('pg');
+const pgClient = new Pool({
+  user: config.pgUser,
+  host: config.pgHost,
+  database: config.pgDatabase,
+  password: config.pgPassword,
+  port: config.pgPort
+});
+pgClient.on('error', () => console.log('Lost Postgres connection'));
+
+pgClient
+  .query(
+    `
+  CREATE TABLE IF NOT EXISTS players (
+    id uuid,
+    name TEXT NOT NUll,
+    color TEXT NOT NULL,
+    active BOOLEAN DEFAULT false,
+    PRIMARY KEY (id)
+  )
+`
+  )
+  .catch(err => console.log(err));
+
+
+// Routes
+
+app.post('/v1/word', function (req, res) {
+  const { name, color } = req.body;
+  return res.status(200).json({
+
+  })
+});
 
 
 server.listen(port, () => console.log(`Server running on port ${port}`));
