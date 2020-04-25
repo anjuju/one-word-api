@@ -6,4 +6,4 @@ const config = {
   pgPort: process.env.PGPORT
 };
 
-export default config;
+module.exports = config;
