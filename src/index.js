@@ -101,12 +101,12 @@ io.on('connection', socket => {
       .catch(e => console.log(`Creating player error: ${e}`));
   });
 
-  socket.on('startGame', () => {
-    console.log('starting game with active player');
+  socket.on('startRound', () => {
+    //console.log('starting round with active player');
     let activeWord = getWord();
     // choose activePlayer and rotate through
     // select player and make active true
-    io.emit('startingGame', { activePlayer: 'testPlayer', activeColor: 'red', activeWord });
+    io.emit('startingRound', { activePlayer: 'testPlayer', activeColor: 'red', activeWord });
   });
 
   socket.on('submitClue', async data => {
@@ -154,8 +154,7 @@ io.on('connection', socket => {
     numberCorrect = newNumberCorrect;
     
     io.emit('numberCorrect', { numberCorrect });
-  })
-
+  });
 /*
   // Create new game room
   socket.on('createGame', data => {    
