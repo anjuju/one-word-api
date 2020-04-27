@@ -37,16 +37,16 @@ const getWord = function() {
 };
 
 // Database storage in API
-const numberCorrect = {
+let numberCorrect = {
   correct: 0,
   skip: 0,
   wrong: 0,
 }
 
-const activePlayers = [];
+let playersDB = [];
 
 let numberOfPlayers;
-let roundNumber;
+let roundNumber = 0;
 
 // Postgres
 const config = require('./postgres/config');
@@ -64,11 +64,19 @@ pgClient.on('error', () => console.log('Lost Postgres connection'));
 pgClient
   .query(
     `
+    DELETE FROM players;
+    DELETE FROM clues;
+    DELETE FROM round_status;
+    `
+  )
+
+pgClient
+  .query(
+    `
     CREATE TABLE IF NOT EXISTS players (
       id TEXT NOT NULL,
-      playerName TEXT NOT NUll,
+      player_name TEXT NOT NUll,
       color TEXT NOT NULL,
-      active BOOLEAN DEFAULT false,
       PRIMARY KEY (id)
     )
     `
@@ -79,10 +87,10 @@ pgClient
   .query(
     `
     CREATE TABLE IF NOT EXISTS clues (
-      playerName TEXT NOT NUll,
+      player_name TEXT NOT NUll,
       color TEXT,
       clue TEXT,
-      PRIMARY KEY (playerName)
+      PRIMARY KEY (player_name)
     )
     `
   )
@@ -91,9 +99,11 @@ pgClient
 pgClient
   .query(
     `
-    CREATE TABLE IF NOT EXISTS roundstatus (
+    CREATE TABLE IF NOT EXISTS round_status (
       round INT,
-      status text
+      active_player text,
+      status text,
+      PRIMARY KEY (round)
     )
     `
   )
@@ -114,33 +124,46 @@ io.on('connection', socket => {
     const { name, color } = data;
     await pgClient
       .query(
-        `INSERT INTO players (id, playerName, color, active) 
-        VALUES ($1, $2, $3, $4)`, [socket.id, name, color, false]
+        `INSERT INTO players (id, player_name, color) 
+        VALUES ($1, $2, $3)`, [socket.id, name, color]
       )
       .catch(e => console.log(`Creating player error: ${e}`));
   });
 
   socket.on('startRound', async () => {
-    //console.log('starting round with active player');
+  
     let activeWord = getWord();
     // choose activePlayer and rotate through
     // select player and make active true
-    io.emit('startingRound', { activePlayer: 'guesser', activeColor: 'pink', activeWord });
-    
+
     const players = await pgClient
-      .query('SELECT playerName FROM players')
-      .catch(e => console.log(`Couldn't get playerName: ${e}`));
+      .query('SELECT player_name, color FROM players')
+      .catch(e => console.log(`Couldn't get player_names: ${e}`));
 
     numberOfPlayers = players.rows.length;
-    console.log('numPlayers from start round', numberOfPlayers);
+    //console.log('numPlayers from start round', numberOfPlayers);
+    
+    playersDB = players.rows;
+
+    let activePlayer = playersDB[roundNumber % numberOfPlayers];
+
     roundNumber++;
+
+    await pgClient
+      .query(
+        `INSERT INTO round_status (round, active_player)
+        VALUES ($1, $2)`, [roundNumber, activePlayer.player_name]
+      )
+      .catch(e => console.log(`Trouble updating active player: ${e}`));    
+    
+    io.emit('startingRound', { activePlayer: activePlayers.player_name, activeColor: activePlayer.color, activeWord });
   });
 
   socket.on('submitClue', async data => {
     const { name, color, clue } = data;
     await pgClient
       .query(
-        `INSERT INTO clues (playerName, color, clue) 
+        `INSERT INTO clues (player_name, color, clue) 
         VALUES ($1, $2, $3)`, [name, color, clue]
       )
       .catch(e => console.log(`Clue input error: ${e}`));
@@ -149,8 +172,8 @@ io.on('connection', socket => {
       .query('SELECT * FROM clues')
       .catch(e => console.log(`Couldn't get clues: ${e}`));
     
-      console.log('number of clues', clues.rows.length);
-      console.log('number of players', numberOfPlayers);
+      // console.log('number of clues', clues.rows.length);
+      // console.log('number of players', numberOfPlayers);
 
     if (clues.rows.length === (numberOfPlayers - 1)) {
       io.emit('checkClues', { clues: clues.rows });
@@ -182,26 +205,32 @@ io.on('connection', socket => {
 
     await pgClient
       .query(
-        `INSERT INTO roundstatus (round, status)
-        VALUES (${roundNumber}, ${status})`
+        `UPDATE round_status
+        SET status=$1
+        WHERE round=$2`, [status, roundNumber]
       )
       .catch(e => console.log(`Trouble updating correct: ${e}`));
     
     const rounds = await pgClient
-      .query('SELECT * FROM roundstatus');
+      .query('SELECT * FROM round_status');
     
     rounds.rows.forEach(row => {
-      const newNumberCorrect = {...numberCorrect};
-      newNumberCorrect[row.status]++;
+      let newNumberCorrect = {...numberCorrect};
+      newNumberCorrect[row.status] = newNumberCorrect[row.status] + 1;
       numberCorrect = newNumberCorrect;
     });
+    console.log('numberCorrect', numberCorrect);
 
     io.emit('numberCorrect', { numberCorrect });
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log('Client disconnected', socket.id);
-    
+    await pgClient
+      .query(
+        `DELETE FROM players
+        WHERE id=$1`, [socket.id]
+      );
   });
 });
 
@@ -212,7 +241,7 @@ io.on('connection', socket => {
 //   const id = uuidv4();
 //   const player = await pgClient
 //     .query(
-//       `INSERT INTO players (id, playerName, color, active) VALUES ($1, $2, $3, $4)`, [id, name, color, false]
+//       `INSERT INTO players (id, player_name, color, active) VALUES ($1, $2, $3, $4)`, [id, name, color, false]
 //     )
 //     .catch(e => {
 //       res
