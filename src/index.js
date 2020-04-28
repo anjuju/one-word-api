@@ -109,17 +109,64 @@ pgClient
   )
   .catch(err => console.log(err));
 
+pgClient
+  .query(
+    `
+    INSERT INTO clues (
+      player_name,
+      color,
+      clue
+    )
+    VALUES
+      (
+        'angelica',
+        'red',
+        'testA'
+      ),
+      (
+        'bob',
+        'pink',
+        'testA'
+      ),
+      (
+        'cathy',
+        'blue',
+        'testinnnnggggC'
+      ),
+      (
+        'dylan',
+        'purple',
+        'testD'
+      ),
+      (
+        'elizabeth r',
+        'black',
+        'testD'
+      ),
+      (
+        'fran',
+        'yellow',
+        'testF'
+      );
+    `
+  ).catch(e => console.log(e));
 
 // Sockets
 const io = require('socket.io')(server);
 
-io.on('connection', socket => {  
+io.on('connection', async socket => {  
   console.log('New client connected', socket.id);
   
-  socket.on('chooseColor', data => {
-    socket.broadcast.emit('removeColors', { color: data.color });
-  });
+  // Remove colors if people already chose colors
+  const colorsChosen = await pgClient
+    .query('SELECT color FROM players')
+    .catch(e => console.log(e));
+  
+  if (colorsChosen.rows.length !== 0) {
+    colorsChosen.rows.forEach(row => socket.emit('removeColors', { color: row.color } ));
+  }
 
+  // SET UP
   socket.on('submitSetUp', async data => {
     const { name, color } = data;
     await pgClient
@@ -128,6 +175,9 @@ io.on('connection', socket => {
         VALUES ($1, $2, $3)`, [socket.id, name, color]
       )
       .catch(e => console.log(`Creating player error: ${e}`));
+
+    socket.broadcast.emit('removeColors', { color: data.color });
+    
   });
 
   socket.on('startRound', async () => {
@@ -156,7 +206,7 @@ io.on('connection', socket => {
       )
       .catch(e => console.log(`Trouble updating active player: ${e}`));    
     
-    io.emit('startingRound', { activePlayer: activePlayers.player_name, activeColor: activePlayer.color, activeWord });
+    io.emit('startingRound', { activePlayer: activePlayer.player_name, activeColor: activePlayer.color, activeWord });
   });
 
   socket.on('submitClue', async data => {
@@ -189,7 +239,12 @@ io.on('connection', socket => {
       )
       .catch(e => console.log(`Clue remove error: ${e}`));
 
-    // io.emit('removingClue');
+    const newClues = await pgClient
+      .query('SELECT * FROM clues')
+      .catch(e => console.log(e));
+
+    console.log(newClues.rows);
+    io.emit('removingClues', { clues: newClues.rows });
   });
 
   socket.on('finishCheckingClues', async () => {
