@@ -463,7 +463,6 @@ soil
 liquid
 moon
 tribe
-doing
 act
 include
 grow
@@ -850,13 +849,11 @@ rinse
 absurd
 tasty
 rule
-plucky
 gold
 mint
 dramatic
 force
 tip
-overwrought
 treatment
 tearful
 super
@@ -870,11 +867,7 @@ young
 expansion
 account
 church
-maddening
-vacuous
 future
-porter
-impolite
 observe
 spot
 well-off
@@ -887,9 +880,6 @@ vigorous
 farm
 kittens
 orange
-attend
-gabby
-seemly
 irritating
 bikes
 delightful
@@ -906,7 +896,7 @@ Harry Potter
 The Lord of the Rings
 The Irishman
 Your Name.
-Pirates of the Caribbean: Dead Man's Chest
+Pirates of the Caribbean
 Call Me by Your Name
 Trolls
 Spies in Disguise
@@ -924,7 +914,7 @@ The Dark Knight Rises
 Forrest Gump
 Jumanji
 John Wick
-Cars
+Cars (animation)
 The Avengers
 Avatar
 Maleficent
@@ -998,3 +988,193 @@ beans
 peanuts
 sunflower seeds
 Black Mirror
+sailboat
+chalk
+charger
+watch
+thermometer
+chair
+video games
+fake flowers
+pillow
+newspaper
+glow stick
+ipod
+sketch pad
+canvas
+blouse
+bag
+spring
+sand paper
+vase
+plastic fork
+chocolate
+slipper
+zipper
+outlet
+pen
+sponge
+seat belt
+magnet
+shirt
+fork
+air freshener
+tomato
+white out
+glasses
+cat
+plate
+tv
+lotion
+stockings
+spoon
+toilet
+USB drive
+knife
+nail file
+leg warmers
+screw
+camera
+book
+drill press
+ice cube tray
+truck
+soy sauce packet
+remote
+conditioner
+checkbook
+lamp
+tree
+twezzers
+paper
+cup
+shawl
+controller
+cinder block
+beef
+ring
+cell phone
+bowl
+scotch tape
+packing peanuts
+clock
+box
+bottle
+washing machine
+flowers
+picture frame
+cookie jar
+socks
+paint brush
+teddies
+mp3 player
+pencil
+playing card
+phone
+greeting card
+car
+shoe lace
+puddle
+door
+keys
+thermostat
+lip gloss
+street lights
+sandal
+bottle cap
+milk
+water bottle
+radio
+sun glasses
+toothpaste
+carrots
+model car
+keyboard
+pool stick
+couch
+rusty nail
+eraser
+clamp
+bow
+desk
+face wash
+cork
+purse
+apple
+blanket
+mop
+photo album
+table
+sharpie
+hair brush
+headphones
+clothes
+wallet
+bracelet
+drawer
+hair tie
+toothbrush
+hanger
+credit card
+button
+grid paper
+tissue box
+boom box
+television
+lamp shade
+balloon
+shoes
+shampoo
+key chain
+nail clippers
+bed
+stop sign
+fridge
+candle
+sidewalk
+candy wrapper
+toe ring
+speakers
+computer
+house
+brocolli
+towel
+glass
+mouse pad
+sofa
+CD
+wagon
+food
+floor
+soap
+sticky note
+soda can
+window
+bananas
+doll
+shovel
+pants
+clay pot
+monitor
+rubber duck
+money
+rug
+chapter book
+coasters
+needle
+perfume
+bookmark
+tire swing
+buckel
+piano
+eye liner
+lace
+rubber band
+bread
+helmet
+mirror
+thread
+flag
+deodorant
+tooth picks
+twister

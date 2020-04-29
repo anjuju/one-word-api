@@ -64,15 +64,6 @@ pgClient.on('error', () => console.log('Lost Postgres connection'));
 pgClient
   .query(
     `
-    DELETE FROM players;
-    DELETE FROM clues;
-    DELETE FROM round_status;
-    `
-  )
-
-pgClient
-  .query(
-    `
     CREATE TABLE IF NOT EXISTS players (
       id TEXT NOT NULL,
       player_name TEXT NOT NUll,
@@ -109,47 +100,56 @@ pgClient
   )
   .catch(err => console.log(err));
 
-pgClient
+  pgClient
   .query(
     `
-    INSERT INTO clues (
-      player_name,
-      color,
-      clue
-    )
-    VALUES
-      (
-        'angelica',
-        'red',
-        'testA'
-      ),
-      (
-        'bob',
-        'pink',
-        'testA'
-      ),
-      (
-        'cathy',
-        'blue',
-        'testinnnnggggC'
-      ),
-      (
-        'dylan',
-        'purple',
-        'testD'
-      ),
-      (
-        'elizabeth r',
-        'black',
-        'testD'
-      ),
-      (
-        'fran',
-        'yellow',
-        'testF'
-      );
+    DELETE FROM players;
+    DELETE FROM clues;
+    DELETE FROM round_status;
     `
-  ).catch(e => console.log(e));
+  );
+
+// pgClient
+//   .query(
+//     `
+//     INSERT INTO clues (
+//       player_name,
+//       color,
+//       clue
+//     )
+//     VALUES
+//       (
+//         'angelica',
+//         'red',
+//         'testA'
+//       ),
+//       (
+//         'bob',
+//         'pink',
+//         'testA'
+//       ),
+//       (
+//         'cathy',
+//         'blue',
+//         'testinnnnggggC'
+//       ),
+//       (
+//         'dylan',
+//         'purple',
+//         'testD'
+//       ),
+//       (
+//         'elizabeth r',
+//         'black',
+//         'testD'
+//       ),
+//       (
+//         'fran',
+//         'yellow',
+//         'testF'
+//       );
+//     `
+//   ).catch(e => console.log(e));
 
 // Sockets
 const io = require('socket.io')(server);
@@ -167,9 +167,9 @@ io.on('connection', async socket => {
   }
 
   // SET UP
-  socket.on('submitSetUp', async data => {
+  socket.on('submitSetUp', data => {
     const { name, color } = data;
-    await pgClient
+    pgClient
       .query(
         `INSERT INTO players (id, player_name, color) 
         VALUES ($1, $2, $3)`, [socket.id, name, color]
@@ -188,7 +188,7 @@ io.on('connection', async socket => {
 
     const players = await pgClient
       .query('SELECT player_name, color FROM players')
-      .catch(e => console.log(`Couldn't get player_names: ${e}`));
+      .catch(e => console.log(`Couldn't get players: ${e}`));
 
     numberOfPlayers = players.rows.length;
     //console.log('numPlayers from start round', numberOfPlayers);
@@ -199,13 +199,17 @@ io.on('connection', async socket => {
 
     roundNumber++;
 
-    await pgClient
+    pgClient
       .query(
         `INSERT INTO round_status (round, active_player)
         VALUES ($1, $2)`, [roundNumber, activePlayer.player_name]
       )
       .catch(e => console.log(`Trouble updating active player: ${e}`));    
     
+    pgClient
+      .query('DELETE FROM clues')
+      .catch(e => console.log(e));
+
     io.emit('startingRound', { activePlayer: activePlayer.player_name, activeColor: activePlayer.color, activeWord });
   });
 
@@ -230,6 +234,14 @@ io.on('connection', async socket => {
     }
   });
 
+  socket.on('ontoCheckingClues', async () => {
+    const clues = await pgClient
+      .query('SELECT * FROM clues')
+      .catch(e => console.log(`Couldn't get clues: ${e}`));
+    
+    io.emit('checkClues', { clues: clues.rows });
+  })
+
   socket.on('removeClue', async data => {
     const { clue } = data;
     await pgClient
@@ -243,7 +255,7 @@ io.on('connection', async socket => {
       .query('SELECT * FROM clues')
       .catch(e => console.log(e));
 
-    console.log(newClues.rows);
+    // console.log(newClues.rows);
     io.emit('removingClues', { clues: newClues.rows });
   });
 
@@ -271,7 +283,7 @@ io.on('connection', async socket => {
     
     rounds.rows.forEach(row => {
       let newNumberCorrect = {...numberCorrect};
-      newNumberCorrect[row.status] = newNumberCorrect[row.status] + 1;
+      newNumberCorrect[row.status]++;
       numberCorrect = newNumberCorrect;
     });
     console.log('numberCorrect', numberCorrect);
@@ -279,9 +291,9 @@ io.on('connection', async socket => {
     io.emit('numberCorrect', { numberCorrect });
   });
 
-  socket.on('disconnect', async () => {
+  socket.on('disconnect', () => {
     console.log('Client disconnected', socket.id);
-    await pgClient
+    pgClient
       .query(
         `DELETE FROM players
         WHERE id=$1`, [socket.id]
