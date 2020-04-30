@@ -380,34 +380,15 @@ io.on('connection', async socket => {
   });
 
   /****************** DISCONNECTING ******************/
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log('Client disconnected', socket.id);
-    pgClient
+    await pgClient
       .query(
         `DELETE FROM players
         WHERE id=$1`, [socket.id]
       );
-    
+    await updateNumberOfPlayers();
   });
 });
-
-// Routes
-
-// app.post('/v1/player', async (req, res) => {
-//   const { name, color } = req.body;
-//   const id = uuidv4();
-//   const player = await pgClient
-//     .query(
-//       `INSERT INTO players (id, player_name, color, active) VALUES ($1, $2, $3, $4)`, [id, name, color, false]
-//     )
-//     .catch(e => {
-//       res
-//         .status(500)
-//         .send('Encountered an internal error when creating player');
-//     });
-//     // console.log('created player');
-//   return res.status(201).send(`Created ${color} player, ${name}`);
-// });
-
 
 server.listen(port, () => console.log(`Server running on port ${port}`));
