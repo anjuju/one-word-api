@@ -61,7 +61,8 @@ const pgClient = new Pool({
 });
 pgClient.on('error', () => console.log('Lost Postgres connection'));
 
-pgClient
+const setUpPg = async () => {
+  await pgClient
   .query(
     `
     CREATE TABLE IF NOT EXISTS players (
@@ -74,7 +75,7 @@ pgClient
   )
   .catch(err => console.log(err));
 
-pgClient
+await pgClient
   .query(
     `
     CREATE TABLE IF NOT EXISTS clues (
@@ -87,7 +88,7 @@ pgClient
   )
   .catch(err => console.log(err));
 
-pgClient
+await pgClient
   .query(
     `
     CREATE TABLE IF NOT EXISTS round_status (
@@ -100,7 +101,7 @@ pgClient
   )
   .catch(err => console.log(err));
 
-  pgClient
+await pgClient
   .query(
     `
     DELETE FROM players;
@@ -109,7 +110,7 @@ pgClient
     `
   );
 
-// pgClient
+// await pgClient
 //   .query(
 //     `
 //     INSERT INTO clues (
@@ -150,6 +151,9 @@ pgClient
 //       );
 //     `
 //   ).catch(e => console.log(e));
+};
+
+
 
 // Sockets
 const io = require('socket.io')(server);
@@ -157,6 +161,8 @@ const io = require('socket.io')(server);
 io.on('connection', async socket => {  
   console.log('New client connected', socket.id);
   
+  setUpPg();
+
   // Remove colors if people already chose colors
   const colorsChosen = await pgClient
     .query('SELECT color FROM players')
@@ -212,6 +218,12 @@ io.on('connection', async socket => {
 
     io.emit('startingRound', { activePlayer: activePlayer.player_name, activeColor: activePlayer.color, activeWord });
   });
+
+  socket.on('getNewWord', () => {
+    const activeWord = getWord();
+
+    io.emit('sendingWord', { activeWord });
+  })
 
   socket.on('submitClue', async data => {
     const { name, color, clue } = data;
@@ -279,14 +291,16 @@ io.on('connection', async socket => {
       .catch(e => console.log(`Trouble updating correct: ${e}`));
     
     const rounds = await pgClient
-      .query('SELECT * FROM round_status');
+      .query(
+        `SELECT * FROM round_status
+        WHERE round=$1`, [roundNumber]);
     
     rounds.rows.forEach(row => {
       let newNumberCorrect = {...numberCorrect};
       newNumberCorrect[row.status]++;
       numberCorrect = newNumberCorrect;
     });
-    console.log('numberCorrect', numberCorrect);
+    //console.log('numberCorrect', numberCorrect);
 
     io.emit('numberCorrect', { numberCorrect });
   });

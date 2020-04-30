@@ -356,10 +356,8 @@ manufacturing
 planned
 enter
 victory
-particularly
 escape
 nuts
-sudden
 sudden
 favorite
 baby
@@ -373,14 +371,12 @@ nervous
 ordinary
 avoid
 leader
-indicate
 arrangement
 everything
 several
 opportunity
 frighten
 split
-get
 arrow
 solid
 population
@@ -616,17 +612,12 @@ hare
 fawn
 toad
 ground hog
-thorny devil
-cow
 ewe
-gemsbok
 wombat
 bat
 fox
 lion
-zebu
 pig
-okapi
 tiger
 reindeer
 mare
@@ -635,15 +626,11 @@ deer
 boar
 panther
 capybara
-coati
 gorilla
-guanaco
 hog
 bumble bee
 hamster
-dromedary
 antelope
-springbok
 duckbill platypus
 lynx
 chameleon
@@ -656,17 +643,14 @@ oryx
 frog
 rabbit
 cat
-dugong
 badger
 moose
-addax
 monkey
 rooster
 alligator
 dung beetle
 beaver
 yak
-pronghorn
 zebra
 gila monster
 baboon
@@ -674,19 +658,16 @@ jaguar
 buffalo
 cougar
 mink
-quagga
 snake
 stallion
 otter
 meerkat
 octopus
-marten
-highland cow
+cow
 chimpanzee
 jerboa
 colt
 kitten
-mynah bird
 impala
 finch
 seal
