@@ -94,21 +94,23 @@ await pgClient
     CREATE TABLE IF NOT EXISTS round_status (
       round INT,
       active_player text,
+      active_word text,
       status text,
+      outcome text,
       PRIMARY KEY (round)
     )
     `
   )
   .catch(err => console.log(err));
 
-await pgClient
-  .query(
-    `
-    DELETE FROM players;
-    DELETE FROM clues;
-    DELETE FROM round_status;
-    `
-  );
+// await pgClient
+//   .query(
+//     `
+//     DELETE FROM players;
+//     DELETE FROM clues;
+//     DELETE FROM round_status;
+//     `
+//   );
 
 // await pgClient
 //   .query(
@@ -172,6 +174,11 @@ io.on('connection', async socket => {
     colorsChosen.rows.forEach(row => socket.emit('removeColors', { color: row.color } ));
   }
 
+  // Set gameStarted as true if joining
+  if (roundNumber > 0) {
+    socket.emit('gameStarted');
+  }
+
   // SET UP
   socket.on('submitSetUp', data => {
     const { name, color } = data;
@@ -182,10 +189,10 @@ io.on('connection', async socket => {
       )
       .catch(e => console.log(`Creating player error: ${e}`));
 
-    socket.broadcast.emit('removeColors', { color: data.color });
-    
+    socket.broadcast.emit('removeColors', { color: data.color }); 
   });
 
+  // Starting round
   socket.on('startRound', async () => {
   
     let activeWord = getWord();
@@ -207,8 +214,8 @@ io.on('connection', async socket => {
 
     pgClient
       .query(
-        `INSERT INTO round_status (round, active_player)
-        VALUES ($1, $2)`, [roundNumber, activePlayer.player_name]
+        `INSERT INTO round_status (round, active_player, active_word, status)
+        VALUES ($1, $2, $3, $4)`, [roundNumber, activePlayer.player_name, activeWord, "giving_clues"]
       )
       .catch(e => console.log(`Trouble updating active player: ${e}`));    
     
@@ -218,9 +225,51 @@ io.on('connection', async socket => {
 
     io.emit('startingRound', { activePlayer: activePlayer.player_name, activeColor: activePlayer.color, activeWord });
   });
+  
+  // Joining after game started
+  socket.on('joinGame', async () => {
+    const round = await pgClient
+      .query(
+        `SELECT * FROM round_status
+        WHERE round=$1`, [roundNumber])
+      .catch(e => console.log(e));
+    
+    const { active_player, active_word, status } = round.rows[0];
 
-  socket.on('getNewWord', () => {
+    const clues = await pgClient
+      .query('SELECT * FROM clues')
+      .catch(e => console.log(`Couldn't get clues: ${e}`));
+
+    switch (status) {
+      case 'giving_clues':
+        const color = await pgClient
+          .query(
+            `SELECT color FROM players
+            WHERE player_name=$1`, [active_player])
+          .catch(e => console.log(e));
+        socket.emit('startingRound', { activePlayer: active_player, activeColor: color.rows[0].color, activeWord: active_word });
+        break;
+      case 'checking_clues':
+        socket.emit('checkClues', { clues: clues.rows });
+        break;
+      case 'guessing':
+        socket.emit('sendingClues', { clues: clues.rows });
+        break;
+      default:
+        console.log('could not get proper round status', status );
+    }
+  })
+
+  socket.on('getNewWord', async () => {
     const activeWord = getWord();
+
+    await pgClient
+      .query(
+        `UPDATE round_status
+        SET active_word=$1
+        WHERE round=$2`, [activeWord, roundNumber]
+      )
+      .catch(e => console.log(`Trouble updating new word: ${e}`));
 
     io.emit('sendingWord', { activeWord });
   })
@@ -233,15 +282,24 @@ io.on('connection', async socket => {
         VALUES ($1, $2, $3)`, [name, color, clue]
       )
       .catch(e => console.log(`Clue input error: ${e}`));
-
-    const clues = await pgClient
-      .query('SELECT * FROM clues')
-      .catch(e => console.log(`Couldn't get clues: ${e}`));
     
       // console.log('number of clues', clues.rows.length);
       // console.log('number of players', numberOfPlayers);
 
+    const clues = await pgClient
+      .query('SELECT * FROM clues')
+      .catch(e => console.log(`Couldn't get clues: ${e}`));
+
     if (clues.rows.length === (numberOfPlayers - 1)) {
+      console.log('automatically onto checking clues');
+      await pgClient
+        .query(
+          `UPDATE round_status
+          SET status=$1
+          WHERE round=$2`, ["checking_clues", roundNumber]
+        )
+        .catch(e => console.log(`Trouble updating status: ${e}`));
+
       io.emit('checkClues', { clues: clues.rows });
     }
   });
@@ -251,6 +309,14 @@ io.on('connection', async socket => {
       .query('SELECT * FROM clues')
       .catch(e => console.log(`Couldn't get clues: ${e}`));
     
+    await pgClient
+      .query(
+        `UPDATE round_status
+        SET status=$1
+        WHERE round=$2`, ["checking_clues", roundNumber]
+      )
+      .catch(e => console.log(`Trouble updating status: ${e}`));
+
     io.emit('checkClues', { clues: clues.rows });
   })
 
@@ -276,17 +342,25 @@ io.on('connection', async socket => {
       .query('SELECT * FROM clues')
       .catch(e => console.log(`Clue retrieval error: ${e}`));
 
-    io.emit('sendingClues', { clues: clues.rows })
-  });
-
-  socket.on('updateCorrect', async data => {
-    const { status } = data;
-
     await pgClient
       .query(
         `UPDATE round_status
         SET status=$1
-        WHERE round=$2`, [status, roundNumber]
+        WHERE round=$2`, ["guessing", roundNumber]
+      )
+      .catch(e => console.log(`Trouble updating status: ${e}`));
+
+    io.emit('sendingClues', { clues: clues.rows })
+  });
+
+  socket.on('updateCorrect', async data => {
+    const { outcome } = data;
+
+    await pgClient
+      .query(
+        `UPDATE round_status
+        SET outcome=$1
+        WHERE round=$2`, [outcome, roundNumber]
       )
       .catch(e => console.log(`Trouble updating correct: ${e}`));
     
@@ -297,7 +371,7 @@ io.on('connection', async socket => {
     
     rounds.rows.forEach(row => {
       let newNumberCorrect = {...numberCorrect};
-      newNumberCorrect[row.status]++;
+      newNumberCorrect[row.outcome]++;
       numberCorrect = newNumberCorrect;
     });
     //console.log('numberCorrect', numberCorrect);
