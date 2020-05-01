@@ -283,8 +283,8 @@ io.on('connection', async socket => {
       .query('SELECT * FROM clues')
       .catch(e => console.log(`Couldn't get clues: ${e}`));
 
-    console.log('number of clues', clues.rows.length);
-    console.log('number of players', numberOfPlayers);
+    // console.log('number of clues', clues.rows.length);
+    // console.log('number of players', numberOfPlayers);
 
     io.emit('removeGetNewWord');
 
