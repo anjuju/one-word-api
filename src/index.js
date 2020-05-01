@@ -388,6 +388,17 @@ io.on('connection', async socket => {
         WHERE id=$1`, [socket.id]
       );
     await updateNumberOfPlayers();
+    const players = await pgClient
+      .query('SELECT * FROM players')
+      .catch(e => console.log(e));
+    if (players.rows.length === 0) {
+      await pgClient
+        .query('DELETE FROM round_status')
+        .catch(e => console.log(e));
+      await pgClient
+        .query('DELETE FROM clues')
+        .catch(e => console.log(e));
+    }
   });
 });
 

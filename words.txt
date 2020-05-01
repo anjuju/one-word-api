@@ -1152,3 +1152,236 @@ flag
 deodorant
 tooth picks
 twister
+Aladdin
+Aliens
+Armageddon
+Avatar
+The Avengers
+Back to the Future
+Batman
+Batman V Superman
+Beverly Hills Cop
+The Blair Witch Project
+The Bourne Identity
+The Bourne Ultimatum
+The Breakfast Club
+Captain America: Civil War
+Casino Royale
+Cast Away
+Crocodile Dundee
+The Dark Knight
+The Dark Knight Rises
+Deadpool
+Die Hard
+Dracula
+Dumb and Dumber
+Dunkirk
+ET the Extra-Terrestrial
+The Exorcist
+Ferris Bueller's Day Off
+Finding Nemo
+Forrest Gump
+Frozen
+Furious
+Ghostbusters
+Gladiator
+The Godfather
+Goldfinger
+Gone With the Wind
+The Goonies
+Groundhog Day
+The Hangover
+Harry Potter
+Home Alone
+Hook
+The Hunger Games
+The Incredibles
+Independence Day
+Indiana Jones
+Inside Out
+Iron Man
+Jaws
+Jurassic Park
+Jurassic World
+Kramer Vs Kramer
+The Lion King
+The Matrix
+Men in Black
+Mission: Impossible
+Monty Python and the Holy Grail
+The Mummy
+The Passion of the Christ
+Peter Pan
+Planet of the Apes
+The Princess Bride
+Psycho
+Pulp Fiction
+Raiders of the Lost Ark
+Return of the Jedi
+Rocky
+Scary Movie
+Shaun of the Dead
+The Shawshank Redemption
+Shrek
+The Silence of the Lambs
+Singin' in the Rain
+The Sixth Sense
+Skyfall
+Snow White and the Seven Dwarfs
+The Sound of Music
+Spaceballs
+Spider-Man
+Star Trek
+Star Wars
+The Ten Commandments
+Terminator : Judgment Day
+Titanic
+Toy Story
+Transformers
+Twilight
+Twister
+The Wizard of Oz
+X-Men
+Alabama
+Alaska
+Arizona
+Arkansas
+California
+Colorado
+Connecticut
+Delaware
+Florida
+Georgia
+Hawaii
+Idaho
+Illinois
+Indiana
+Iowa
+Kansas
+Kentucky
+Louisiana
+Maine
+Maryland
+Massachusetts
+Michigan
+Minnesota
+Mississippi
+Missouri
+Montana
+Nebraska
+Nevada
+New Hampshire
+New Jersey
+New Mexico
+New York
+North Carolina
+North Dakota
+Ohio
+Oklahoma
+Oregon
+Pennsylvania
+Rhode Island
+South Carolina
+South Dakota
+Tennessee
+Texas
+Utah
+Vermont
+Virginia
+Washington
+West Virginia
+Wisconsin
+Wyoming
+Adele
+Amanda Bynes
+Angelina Jolie
+Anne Hathaway
+Armie Hammer
+Ariana Grande
+Ashton Kutcher
+Barack Obama
+Ben Affleck
+Beyonce
+Bradley Cooper
+Ben Stiller
+Brad Pitt
+Brittany Snow
+Brittany Murphy
+Brittney Spears
+Cameron Diaz
+Calvin Harris
+Charli XCX
+Charlie Sheen
+Christina Aguilera
+Chris Pratt
+Drake
+Donald Trump
+David Bowie
+Emma Roberts
+Emma Stone
+Emma Watson
+Ellen Degeneres
+Gwen Stefani
+Hilary Duff
+Hillary Clinton
+Harry Potter
+Harry Styles
+Iggy Azalea
+Jaden Smith
+Jake Gyllenhaal
+Jason Aldean
+Jenna Marbles
+Jennifer Lawrence
+Jennifer Aniston
+Jennifer Love Hewitt
+Jennifer Lopez
+Jessica Alba
+Jessica Simpson
+John Mayer
+John Mellencamp
+Joey Graceffa
+Johnny Cash
+Johnny Depp
+Justin Bieber
+Justin Timberlake
+Kanye West
+Katy Perry
+Kristen Stewart
+Lady Gaga
+Liam Hemsworth
+Liam Payne
+Linsey Lohan
+Lorde
+Macklemore
+Mario Lopez
+Michael Jackson
+Michael Buble
+Miley Cyrus
+Nick Cannon
+Niall Horan
+Prince
+Pharell Williams
+Paul McCartney
+Patrick Swayze
+Reese Witherspoon
+Rihanna
+Rita Ora
+Robert Pattinson
+Robin Williams
+Robin Thicke
+Ryan Gosling
+Selina Gomez
+Sia
+Talor Lautner
+Taylor Swift
+Tom Hanks
+Tom Brady
+Usher
+Victoria Justice
+Will Smith
+Wiz Khalifa
+Zayn Malik
+Zac Efron
+Zendaya
+The Beach Boys
+The Beatles
