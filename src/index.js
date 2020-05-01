@@ -244,8 +244,8 @@ io.on('connection', async socket => {
         socket.emit('proceedCheckingClues', { clues: clues.rows });
         break;
       case 'guessing':
-        socket.emit('proceedGuessing', { clues: clues.rows });
         socket.emit('outcomes', { outcomes });
+        socket.emit('proceedGuessing', { clues: clues.rows });
         break;
       default:
         console.log('Could not get proper round status', status );
@@ -359,8 +359,8 @@ io.on('connection', async socket => {
     await pgClient
       .query(
         `UPDATE round_status
-        SET outcome=$1
-        WHERE round=$2`, [outcome, roundNumber]
+        SET status=$1, outcome=$2
+        WHERE round=$3`, ["finished", outcome, roundNumber]
       )
       .catch(e => console.log(`Trouble updating correct: ${e}`));
     
@@ -392,9 +392,11 @@ io.on('connection', async socket => {
       .query('SELECT * FROM players')
       .catch(e => console.log(e));
     if (players.rows.length === 0) {
+      console.log('all players left - removing rounds and clues');
       await pgClient
         .query('DELETE FROM round_status')
         .catch(e => console.log(e));
+      roundNumber = 0;
       await pgClient
         .query('DELETE FROM clues')
         .catch(e => console.log(e));
