@@ -7,5 +7,6 @@ COPY package.json .
 RUN npm install  
 COPY . . 
 
+EXPOSE 8080
 # Default command 
 CMD ["npm", "start"]
