@@ -406,7 +406,7 @@ io.on('connection', async socket => {
 
 // HEALTH CHECK
 
-app.get('health', (req, res) => {
+app.get('/health', (req, res) => {
   res.status(200).send("health check ok");
 });
 
