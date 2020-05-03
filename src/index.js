@@ -401,6 +401,7 @@ io.on('connection', async socket => {
 
   socket.on('endGame', async () => {
     await clearData();
+    io.emit('restart');
   }); 
 
   /****************** DISCONNECTING ******************/
