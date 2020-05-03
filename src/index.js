@@ -379,6 +379,28 @@ io.on('connection', async socket => {
     io.emit('outcomes', { outcomes });
   });
 
+  const clearData = async () => {
+    //console.log('all players left - removing rounds and clues');
+    await pgClient
+      .query('DELETE FROM round_status')
+      .catch(e => console.log(e));
+    await pgClient
+      .query('DELETE FROM clues')
+      .catch(e => console.log(e));
+    outcomes = {
+      correct: 0,
+      skip: 0,
+      wrong: 0,
+    }
+    playersDB = [];
+    numberOfPlayers = 0;
+    roundNumber = 0;
+  }
+
+  socket.on('endGame', async () => {
+    await clearData();
+  }); 
+
   /****************** DISCONNECTING ******************/
   socket.on('disconnect', async () => {
     console.log('Client disconnected', socket.id);
@@ -392,14 +414,7 @@ io.on('connection', async socket => {
       .query('SELECT * FROM players')
       .catch(e => console.log(e));
     if (players.rows.length === 0) {
-      console.log('all players left - removing rounds and clues');
-      await pgClient
-        .query('DELETE FROM round_status')
-        .catch(e => console.log(e));
-      roundNumber = 0;
-      await pgClient
-        .query('DELETE FROM clues')
-        .catch(e => console.log(e));
+      await clearData();
     }
   });
 });
