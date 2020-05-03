@@ -382,6 +382,8 @@ io.on('connection', async socket => {
   const clearData = async () => {
     //console.log('all players left - removing rounds and clues');
     await pgClient
+      .query('DELETE FROM players');
+    await pgClient
       .query('DELETE FROM round_status')
       .catch(e => console.log(e));
     await pgClient
