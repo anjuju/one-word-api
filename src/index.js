@@ -243,6 +243,7 @@ io.on('connection', async socket => {
       case 'checking_clues':
         socket.emit('proceedCheckingClues', { clues: clues.rows });
         break;
+      case 'finished':
       case 'guessing':
         socket.emit('outcomes', { outcomes });
         socket.emit('proceedGuessing', { clues: clues.rows });
@@ -365,15 +366,15 @@ io.on('connection', async socket => {
       .catch(e => console.log(`Trouble updating correct: ${e}`));
     
     const rounds = await pgClient
-      .query(
-        `SELECT round, active_word, outcome FROM round_status
-        WHERE round=$1`, [roundNumber]);
+      .query('SELECT round, active_word, outcome FROM round_status');
+        // WHERE round=$1`, [roundNumber]);
     
-    rounds.rows.forEach(row => {
-      let newOutcomes = {...outcomes};
-      newOutcomes[row.outcome]++;
-      outcomes = newOutcomes;
-    });
+    const lastRound = rounds.rows[rounds.rows.length-1];
+
+    let newOutcomes = {...outcomes};
+    newOutcomes[lastRound.outcome]++;
+    outcomes = newOutcomes;
+
     // console.log('outcomes', outcomes);
     io.emit('stats', { outcomes, stats: rounds.rows });
 
