@@ -366,7 +366,7 @@ io.on('connection', async socket => {
     
     const rounds = await pgClient
       .query(
-        `SELECT * FROM round_status
+        `SELECT round, active_word, outcome FROM round_status
         WHERE round=$1`, [roundNumber]);
     
     rounds.rows.forEach(row => {
@@ -375,8 +375,11 @@ io.on('connection', async socket => {
       outcomes = newOutcomes;
     });
     // console.log('outcomes', outcomes);
+    io.emit('stats', { outcomes, stats: rounds.rows });
 
-    io.emit('outcomes', { outcomes });
+    if (rounds.rows.length === 15) {
+      io.emit('endingGame');
+    }
   });
 
   const clearData = async () => {
@@ -400,9 +403,13 @@ io.on('connection', async socket => {
   }
 
   socket.on('endGame', async () => {
+    io.emit('endingGame');
     await clearData();
-    io.emit('restart');
   }); 
+
+  socket.on('startNewGame', () => {
+    io.emit('startingNewGame');
+  })
 
   /****************** DISCONNECTING ******************/
   socket.on('disconnect', async () => {
