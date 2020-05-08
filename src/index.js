@@ -217,13 +217,18 @@ io.on('connection', async socket => {
   
   /****************** JOINING ******************/
   socket.on('joinGame', async () => {
-    const round = await pgClient
-      .query(
-        `SELECT * FROM round_status
-        WHERE round=$1`, [roundNumber])
-      .catch(e => console.log(e));
-    
-    const { active_player, active_word, status } = round.rows[0];
+    // const round = await pgClient
+    //   .query(
+    //     `SELECT * FROM round_status
+    //     WHERE round=$1`, [roundNumber])
+    //   .catch(e => console.log(e));
+
+    const rounds = await pgClient
+    .query('SELECT * FROM round_status');
+  
+    const lastRound = rounds.rows[rounds.rows.length-1];
+
+    const { active_player, active_word, status } = lastRound;
 
     await updateNumberOfPlayers();
     
@@ -245,7 +250,7 @@ io.on('connection', async socket => {
         break;
       case 'finished':
       case 'guessing':
-        socket.emit('outcomes', { outcomes });
+        socket.emit('stats', { outcomes, stats: rounds.rows });
         socket.emit('proceedGuessing', { clues: clues.rows });
         break;
       default:
@@ -367,7 +372,6 @@ io.on('connection', async socket => {
     
     const rounds = await pgClient
       .query('SELECT round, active_word, outcome FROM round_status');
-        // WHERE round=$1`, [roundNumber]);
     
     const lastRound = rounds.rows[rounds.rows.length-1];
 
@@ -375,7 +379,6 @@ io.on('connection', async socket => {
     newOutcomes[lastRound.outcome]++;
     outcomes = newOutcomes;
 
-    // console.log('outcomes', outcomes);
     io.emit('stats', { outcomes, stats: rounds.rows });
 
     if (rounds.rows.length === 15) {
