@@ -494,7 +494,6 @@ Scarlett Johansson
 Jennifer Lopez
 Mother Teresa
 Serena Williams
-Glenn Beck
 Robin Hood
 Cristiano Ronaldo
 William Shakespeare
@@ -864,7 +863,6 @@ abaft
 hands
 Parasite
 Booksmart
-Iron Man 2
 Inception
 Harry Potter
 The Lord of the Rings
@@ -1111,7 +1109,6 @@ toe ring
 speakers
 computer
 house
-brocolli
 towel
 glass
 mouse pad

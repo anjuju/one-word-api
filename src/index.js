@@ -226,9 +226,12 @@ io.on('connection', async socket => {
     const rounds = await pgClient
     .query('SELECT * FROM round_status');
   
-    const lastRound = rounds.rows[rounds.rows.length-1];
+    const lastRound = await pgClient
+      .query(`
+        SELECT * FROM round_status
+        WHERE round=$1`, [roundNumber]);
 
-    const { active_player, active_word, status } = lastRound;
+    const { active_player, active_word, status } = lastRound.rows[0];
 
     await updateNumberOfPlayers();
     
@@ -373,10 +376,13 @@ io.on('connection', async socket => {
     const rounds = await pgClient
       .query('SELECT round, active_word, outcome FROM round_status');
     
-    const lastRound = rounds.rows[rounds.rows.length-1];
+    const lastRound = await pgClient
+      .query(`
+        SELECT outcome FROM round_status
+        WHERE round=$1`, [roundNumber]);
 
     let newOutcomes = {...outcomes};
-    newOutcomes[lastRound.outcome]++;
+    newOutcomes[lastRound.rows[0].outcome]++;
     outcomes = newOutcomes;
 
     io.emit('stats', { outcomes, stats: rounds.rows });
