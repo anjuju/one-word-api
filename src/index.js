@@ -90,14 +90,14 @@ await pgClient
   )
   .catch(err => console.log(err));
 
-// await pgClient
-//   .query(
-//     `
-//     DELETE FROM players;
-//     DELETE FROM clues;
-//     DELETE FROM round_status;
-//     `
-//   );
+await pgClient
+  .query(
+    `
+    DELETE FROM players;
+    DELETE FROM clues;
+    DELETE FROM round_status;
+    `
+  );
 
 // await pgClient
 //   .query(
@@ -161,25 +161,7 @@ io.on('connection', async socket => {
     colorsChosen.rows.forEach(row => socket.emit('removeColors', { color: row.color } ));
   }
 
-  // Set gameStarted as true if joining
-  if (roundNumber > 0) {
-    socket.emit('gameStarted');
-  }
-
-  /****************** SET UP ******************/
-  socket.on('submitSetUp', data => {
-    const { name, color } = data;
-    pgClient
-      .query(
-        `INSERT INTO players (id, player_name, color) 
-        VALUES ($1, $2, $3)`, [socket.id, name, color]
-      )
-      .catch(e => console.log(`Creating player error: ${e}`));
-
-    socket.broadcast.emit('removeColors', { color: data.color }); 
-  });
-
-  const updateNumberOfPlayers = async () => {
+  const sendPlayers = async () => {
     const players = await pgClient
       .query('SELECT player_name, color FROM players')
       .catch(e => console.log(`Couldn't get players: ${e}`));
@@ -188,14 +170,36 @@ io.on('connection', async socket => {
     //console.log('numPlayers from start round', numberOfPlayers);
     
     playersDB = players.rows;
+
+    io.emit('players', { players: playersDB })
   }
+
+  // Set gameStarted as true if joining
+  if (roundNumber > 0) {
+    socket.emit('gameStarted');
+    sendPlayers();
+  }
+
+  /****************** SET UP ******************/
+  socket.on('submitSetUp', async data => {
+    const { name, color } = data;
+    await pgClient
+      .query(
+        `INSERT INTO players (id, player_name, color) 
+        VALUES ($1, $2, $3)`, [socket.id, name, color]
+      )
+      .catch(e => console.log(`Creating player error: ${e}`));
+
+    socket.broadcast.emit('removeColors', { color: data.color });
+    sendPlayers();
+  });
 
   /****************** STARTING ROUND ******************/
   socket.on('startRound', async () => {
   
     let activeWord = getWord();
     
-    await updateNumberOfPlayers();
+    await sendPlayers();
 
     let activePlayer = playersDB[roundNumber % numberOfPlayers];
 
@@ -217,12 +221,7 @@ io.on('connection', async socket => {
   
   /****************** JOINING ******************/
   socket.on('joinGame', async () => {
-    // const round = await pgClient
-    //   .query(
-    //     `SELECT * FROM round_status
-    //     WHERE round=$1`, [roundNumber])
-    //   .catch(e => console.log(e));
-
+    
     const rounds = await pgClient
     .query('SELECT * FROM round_status');
   
@@ -233,7 +232,7 @@ io.on('connection', async socket => {
 
     const { active_player, active_word, status } = lastRound.rows[0];
 
-    await updateNumberOfPlayers();
+    await sendPlayers();
     
     const clues = await pgClient
       .query('SELECT * FROM clues')
@@ -295,7 +294,18 @@ io.on('connection', async socket => {
     // console.log('number of clues', clues.rows.length);
     // console.log('number of players', numberOfPlayers);
 
+    const playersSubmittedClue = await pgClient
+      .query(`
+        SELECT players.player_name, players.color, clues.clue
+        FROM players
+        LEFT JOIN clues
+        ON players.player_name = clues.player_name;
+      `)
+      .catch(e => console.log(e));
+
     io.emit('removeGetNewWord');
+
+    io.emit('players', { players: playersSubmittedClue.rows });
 
     if (clues.rows.length === (numberOfPlayers - 1)) {
       //console.log('automatically onto checking clues');
@@ -410,6 +420,7 @@ io.on('connection', async socket => {
     playersDB = [];
     numberOfPlayers = 0;
     roundNumber = 0;
+    io.emit('players', { players: [] });
   }
 
   socket.on('endGame', async () => {
@@ -429,7 +440,7 @@ io.on('connection', async socket => {
         `DELETE FROM players
         WHERE id=$1`, [socket.id]
       );
-    await updateNumberOfPlayers();
+    await sendPlayers();
     const players = await pgClient
       .query('SELECT * FROM players')
       .catch(e => console.log(e));
